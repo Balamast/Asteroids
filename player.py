@@ -92,6 +92,7 @@ class Player(CircleShape):
 
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
         velocity = forward * PLAYER_SHOOT_SPEED
+        self.shoot_sound.play()
         return Shot(self.position.x, self.position.y, velocity)
         
 

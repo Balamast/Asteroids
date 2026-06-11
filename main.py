@@ -11,7 +11,15 @@ def main():
     print(f"Screen width: {SCREEN_WIDTH}")
     print(f"Screen height: {SCREEN_HEIGHT}")
     
+    # frequency, size, channels, buffer
+    pygame.mixer.init(44100, -16, 2, 4096)
     pygame.init()
+    
+    pygame.mixer.music.load("assets/sounds/main_theme.mp3")
+    pygame.mixer.music.play(-1) #play music in loop
+    shot_sound = pygame.mixer.Sound("assets/sounds/effects/Shot.wav")
+    Player.shoot_sound = shot_sound
+    asteroid_split_sound = pygame.mixer.Sound("assets/sounds/effects/Explosion.wav")
 
     clock = pygame.time.Clock()
     dt = 0.0
@@ -55,6 +63,7 @@ def main():
         for asteroid in asteroids:
             for shot in shots:
                 if shot.collides_with(asteroid):
+                    asteroid_split_sound.play()
                     log_event("asteroid_shot")
                     asteroid.split()
                     shot.kill()
