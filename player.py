@@ -6,9 +6,25 @@ from shot import Shot
 class Player(CircleShape):
     def __init__(self, x, y,):
         super().__init__(x, y, PLAYER_RADIUS)
+
+        #load main sprite and convert alpha
+        self.sprite_sheet = pygame.image.load("assets/spaceships.png").convert_alpha()
+        temp_sheet = pygame.image.load ("assets/thruster.png").convert_alpha()
+        self.thruster_sheet = []
+        #getting frames from thruster sprite sheet
+        for i in range(5):
+            raw_frame = temp_sheet.subsurface(pygame.Rect(i * 8, 0, 8, 8))
+            #scale it to 24x24
+            scaled_frame = pygame.transform.scale(raw_frame, (24, 24))
+            self.thruster_sheet.append(scaled_frame)
+        #extract specefic sprite from the sprite sheet
+        self.ship_image = self.sprite_sheet.subsurface(pygame.Rect(0, 0, 48, 48))
         self.rotation = 0
         self.cooldown = 0
-
+        self.thruster_index = 0
+        self.animation_timer = 0
+        
+        
     def triangle(self) -> list[pygame.Vector2]:
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
         right = pygame.Vector2(0, 1).rotate(self.rotation + 90) * self.radius / 1.5
@@ -18,13 +34,36 @@ class Player(CircleShape):
         return [a, b, c] 
 
     def draw(self, screen):
-        pygame.draw.polygon(screen, "white", self.triangle(), width=LINE_WIDTH)
+        ##rotate ship image
+        rotated_ship = pygame.transform.rotate(self.ship_image, -self.rotation)
+        #get rectangle for rotated image and center it on the player position
+        ship_rect = rotated_ship.get_rect(center=self.position)
+        
+        #thrusters
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_w]:
+            current_frame = self.thruster_sheet[self.thruster_index]
+            #rotate thruster frame to match ship rotation
+            rotated_thruster = pygame.transform.rotate(current_frame, -self.rotation + 180)
+            # put thruster slightly behind ship
+            thruster_offset = pygame.Vector2(0, -24).rotate(self.rotation)
+            thruster_rect = rotated_thruster.get_rect(center=self.position + thruster_offset)
+            #draw thruster
+            screen.blit(rotated_thruster, thruster_rect)
+            #draw ship
+        screen.blit(rotated_ship, ship_rect)
 
     def rotate(self, dt):
         self.rotation += PLAYER_TURN_SPEED * dt
     
     def update(self, dt: float) -> None:
         keys = pygame.key.get_pressed()
+        #animation timer for thrusters
+        self.animation_timer += dt
+        if self.animation_timer > 0.1: #swap frames every 0.1 seconds
+            self.thruster_index = (self.thruster_index + 1) % len(self.thruster_sheet)
+            self.animation_timer = 0
+
         self.cooldown -= dt
 
         if keys[pygame.K_SPACE]:
