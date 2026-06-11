@@ -10,10 +10,17 @@ def main():
     print("Starting Asteroids with pygame version 2.6.1 ")
     print(f"Screen width: {SCREEN_WIDTH}")
     print(f"Screen height: {SCREEN_HEIGHT}")
+    
     pygame.init()
+
     clock = pygame.time.Clock()
     dt = 0.0
+    
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    #bg image load and scale to screen size
+    bg_image = pygame.image.load("assets/background_image.png")
+    bg_image = pygame.transform.scale(bg_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
+
     asteroids = pygame.sprite.Group()
     updatable = pygame.sprite.Group()
     drawable = pygame.sprite.Group()
@@ -34,8 +41,8 @@ def main():
             if event.type == pygame.QUIT:
                 return
             
-        #fill screen black
-        screen.fill("black")
+        #draw background
+        screen.blit(bg_image, (0, 0))
 
         #update player
         updatable.update(dt)
